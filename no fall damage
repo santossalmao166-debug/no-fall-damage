@@ -1,0 +1,34 @@
+local player = game.Players.LocalPlayer
+
+local function aplicarNoFall()
+    local char = player.Character or player.CharacterAdded:Wait()
+    local humanoid = char:WaitForChild("Humanoid")
+
+    -- 🔥 impede dano resetando vida
+    local lastHealth = humanoid.Health
+
+    humanoid.HealthChanged:Connect(function()
+        if humanoid.Health < lastHealth then
+            -- se perdeu vida (queda), recupera
+            humanoid.Health = lastHealth
+        end
+        lastHealth = humanoid.Health
+    end)
+
+    -- 🔥 evita estado de queda
+    humanoid.StateChanged:Connect(function(old, new)
+        if new == Enum.HumanoidStateType.Freefall then
+            humanoid:ChangeState(Enum.HumanoidStateType.Running)
+        end
+    end)
+end
+
+-- aplicar sempre que spawnar
+if player.Character then
+    aplicarNoFall()
+end
+
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+    aplicarNoFall()
+end)
